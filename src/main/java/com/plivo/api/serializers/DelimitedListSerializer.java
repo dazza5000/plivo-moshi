@@ -1,17 +1,21 @@
 package com.plivo.api.serializers;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
+
+import com.squareup.moshi.FromJson;
+import com.squareup.moshi.JsonQualifier;
+import com.squareup.moshi.ToJson;
+
 import java.io.IOException;
+import java.lang.annotation.Retention;
 import java.util.List;
 
-public class DelimitedListSerializer extends JsonSerializer<List<String>> {
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+public class DelimitedListSerializer {
 
   private final String delimiter;
 
-  DelimitedListSerializer() {
+  public DelimitedListSerializer() {
     this("<");
   }
 
@@ -19,9 +23,15 @@ public class DelimitedListSerializer extends JsonSerializer<List<String>> {
     this.delimiter = delimiter;
   }
 
-  @Override
-  public void serialize(List<String> value, JsonGenerator gen, SerializerProvider serializers)
-    throws IOException, JsonProcessingException {
-    gen.writeString(String.join(delimiter, value));
+  @FromJson
+  @CustomDelimiter
+  public String toJson(String incomingList) {
+    return null;
+  }
+
+  @ToJson
+  public String toJson(@CustomDelimiter List<String> value) {
+    return String.join(delimiter, value);
   }
 }
+

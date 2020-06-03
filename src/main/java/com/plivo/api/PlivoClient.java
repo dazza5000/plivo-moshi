@@ -1,22 +1,16 @@
 package com.plivo.api;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.DeserializationConfig;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.plivo.api.models.message.MessageCreator;
+import com.plivo.api.serializers.CustomDelimiter;
+import com.plivo.api.serializers.DelimitedListSerializer;
 import com.plivo.api.util.Utils;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+import com.squareup.moshi.Types;
+
 import okhttp3.Credentials;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -26,14 +20,14 @@ import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okhttp3.logging.HttpLoggingInterceptor.Level;
 import retrofit2.Retrofit;
-import retrofit2.converter.jackson.JacksonConverterFactory;
+import retrofit2.converter.moshi.MoshiConverterFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.ProtocolException;
-import java.text.SimpleDateFormat;
+import java.util.List;
 
 public class PlivoClient {
 
@@ -52,44 +46,17 @@ public class PlivoClient {
     return testing;
   }
 
-  static {
-    simpleModule.setDeserializerModifier(new BeanDeserializerModifier() {
-      @Override
-      public JsonDeserializer<?> modifyEnumDeserializer(DeserializationConfig config, JavaType type,
-                                                        BeanDescription beanDesc, JsonDeserializer<?> deserializer) {
-        return new JsonDeserializer<Enum>() {
-          @Override
-          public Enum deserialize(JsonParser jp, DeserializationContext ctxt)
-            throws IOException, JsonProcessingException {
-            Class<? extends Enum> rawClass = (Class<Enum<?>>) type.getRawClass();
-            return Enum.valueOf(rawClass, jp.getValueAsString().toUpperCase().replace("-", "_"));
-          }
-        };
-      }
-    });
-    simpleModule.addSerializer(Enum.class, new StdSerializer<Enum>(Enum.class) {
-      @Override
-      public void serialize(Enum value, JsonGenerator gen, SerializerProvider provider)
-        throws IOException {
-        gen.writeString(value.name().toLowerCase().replace("_", "-"));
-      }
-    });
-  }
 
   {
     try {
       InputStream inputStream = PlivoClient.class
         .getResource("version.txt")
         .openStream();
-
       version = new BufferedReader(new InputStreamReader(inputStream)).readLine();
     } catch (IOException ignored) {
       ignored.printStackTrace();
     }
-    objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-    objectMapper.disable(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS);
-    objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
-    objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+
   }
 
   private final Interceptor interceptor = new HttpLoggingInterceptor()
@@ -111,21 +78,18 @@ public class PlivoClient {
    *   .proxy(proxy)
    *   .connectTimeout(1, TimeUnit.MINUTES);
    * </code></pre>
-   *
-   * @param authId
+   *  @param authId
    * @param authToken
    * @param httpClientBuilder
    * @param baseUrl
-   * @param simpleModule
    */
-  public PlivoClient(String authId, String authToken, OkHttpClient.Builder httpClientBuilder, final String baseUrl, final SimpleModule simpleModule) {
+  public PlivoClient(String authId, String authToken, OkHttpClient.Builder httpClientBuilder, final String baseUrl) {
     if (!(Utils.isAccountIdValid(authId) || Utils.isSubaccountIdValid(authId))) {
       throw new IllegalArgumentException("invalid account ID");
     }
 
     this.authId = authId;
     this.authToken = authToken;
-    this.objectMapper.registerModule(simpleModule);
 
     httpClient = httpClientBuilder
       .addNetworkInterceptor(interceptor)
@@ -159,10 +123,16 @@ public class PlivoClient {
         return response;
       }).build();
 
+
+    Moshi moshi = new Moshi.Builder()
+      .build();
+
+    JsonAdapter<MessageCreator> messageCreatorJsonAdapter = moshi.adapter(MessageCreator.class);
+
     retrofit = new Retrofit.Builder()
       .client(httpClient)
       .baseUrl(baseUrl)
-      .addConverterFactory(JacksonConverterFactory.create(objectMapper))
+      .addConverterFactory(MoshiConverterFactory.create(moshi))
       .build();
 
     this.apiService = retrofit.create(PlivoAPIService.class);
@@ -170,7 +140,7 @@ public class PlivoClient {
     callInsightsRetrofit = new Retrofit.Builder()
       .client(httpClient)
       .baseUrl((CALLINSIGHTS_BASE_URL))
-      .addConverterFactory(JacksonConverterFactory.create(objectMapper))
+      .addConverterFactory(MoshiConverterFactory.create(new Moshi.Builder().build()))
       .build();
 
     this.callInsightsAPIService = callInsightsRetrofit.create(CallInsightsAPIService.class);
@@ -190,7 +160,7 @@ public class PlivoClient {
    * @param authToken
    */
   public PlivoClient(String authId, String authToken) {
-    this(authId, authToken, new OkHttpClient.Builder(), BASE_URL, simpleModule);
+    this(authId, authToken, new OkHttpClient.Builder(), BASE_URL);
   }
 
   /**
@@ -208,7 +178,7 @@ public class PlivoClient {
    * @param httpClientBuilder
    */
   public PlivoClient(String authId, String authToken, OkHttpClient.Builder httpClientBuilder) {
-    this(authId, authToken, httpClientBuilder, BASE_URL, simpleModule);
+    this(authId, authToken, httpClientBuilder, BASE_URL);
   }
 
   public static ObjectMapper getObjectMapper() {

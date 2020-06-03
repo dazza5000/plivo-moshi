@@ -2,7 +2,6 @@ package com.plivo.api.models.base;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.plivo.api.Plivo;
 import com.plivo.api.PlivoClient;
@@ -21,8 +20,8 @@ import retrofit2.Response;
 // Needed because we use fluent style APIs
 @JsonAutoDetect(fieldVisibility = Visibility.ANY)
 public abstract class BaseRequest<T extends BaseResource> {
-  @JsonIgnore
-  protected PlivoClient plivoClient = Plivo.getClient();
+
+  protected transient PlivoClient plivoClient = Plivo.getClient();
 
   public PlivoClient client() {
       return this.plivoClient;

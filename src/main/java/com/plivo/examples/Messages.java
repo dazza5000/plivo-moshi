@@ -1,3 +1,14 @@
+import com.plivo.api.Plivo;
+import com.plivo.api.exceptions.PlivoRestException;
+import com.plivo.api.models.message.Message;
+import com.plivo.api.models.message.MessageCreateResponse;
+import com.plivo.api.models.message.MessageType;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 //package com.plivo.examples;
 //
 //import com.plivo.api.Plivo;
@@ -14,32 +25,33 @@
 //import java.io.IOException;
 //import java.util.Collections;
 //
-//public class Messages {
+public class Messages {
+
+  public static void main(String[] args) {
+    Plivo.init("MANJC3ZJKXOTM0NTZLMD", "N2RiMGExODRlZTVkNDc3ZWI4OTY0NTA2Nzc4MDUz");
+    sendmms();
+    // getMessage();
+    // listMedia();
+    //getMedia();
+    //deleteMedia();
+//    uploadMedia();
+
+  }
 //
-//  public static void main(String[] args) {
-//    Plivo.init("xx", "xxx");
-//    sendmms();
-//    // getMessage();
-//    // listMedia();
-//    //getMedia();
-//    //deleteMedia();
-////    uploadMedia();
-//
-//  }
-//
-//  // send mms
-//  private static void sendmms() {
-//    Plivo.init("xxxxx", "xxxx");
-//    try {
-//      MessageCreateResponse response = Message.creator("src", Collections.singletonList("dst"),
-//        "Hello, this is test message").type(MessageType.MMS).media_urls(new String[]{"https://test/test.jpg"})
-//        .create();
-//      System.out.println(response);
-//      System.out.println(response.getMessageUuid());
-//    } catch (PlivoRestException | IOException e) {
-//      e.printStackTrace();
-//    }
-//  }
+  // send mms
+  private static void sendmms() {
+    Plivo.init("MANJC3ZJKXOTM0NTZLMD", "N2RiMGExODRlZTVkNDc3ZWI4OTY0NTA2Nzc4MDUz");
+    try {
+      List<String> numbers = new ArrayList<>();
+      numbers.add("+15126937499");
+      MessageCreateResponse response = Message.creator("+15033053996", numbers, "Hello, world!")
+        .create();
+      System.out.println(response);
+      System.out.println(response.getMessageUuid());
+    } catch (PlivoRestException | IOException e) {
+      e.printStackTrace();
+    }
+  }
 //
 //  // get message detail
 //  private static void getMessage() {
@@ -126,5 +138,5 @@
 //      e.printStackTrace();
 //    }
 //  }
-//}
+}
 //

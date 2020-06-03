@@ -47,11 +47,11 @@ public class PhloRestClient {
   }
 
   public PhloRestClient(String authId, String authToken) {
-    this.client = new PlivoClient(authId, authToken, new OkHttpClient.Builder(), BASE_URL, simpleModule);
+    this.client = new PlivoClient(authId, authToken, new OkHttpClient.Builder(), BASE_URL);
   }
 
   public PhloRestClient(String authId, String authToken, OkHttpClient.Builder httpClientBuilder) {
-    this.client = new PlivoClient(authId, authToken, httpClientBuilder, BASE_URL, simpleModule);
+    this.client = new PlivoClient(authId, authToken, httpClientBuilder, BASE_URL);
   }
 
   public PlivoClient getClient() {

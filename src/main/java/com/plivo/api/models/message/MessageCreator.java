@@ -3,9 +3,11 @@ package com.plivo.api.models.message;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.plivo.api.models.base.Creator;
+import com.plivo.api.serializers.CustomDelimiter;
 import com.plivo.api.serializers.DelimitedListSerializer;
 import com.plivo.api.util.Utils;
-import java.net.URL;
+import com.squareup.moshi.Json;
+
 import java.util.List;
 import retrofit2.Call;
 
@@ -14,16 +16,14 @@ import retrofit2.Call;
  */
 public class MessageCreator extends Creator<MessageCreateResponse> {
 
-  @JsonProperty("src")
+  @Json(name = "src")
   private String source;
-  @JsonSerialize(using = DelimitedListSerializer.class)
-  @JsonProperty("dst")
+  @Json(name = "dst")
   private final List<String> destination;
   private final String text;
   @JsonProperty("powerpack_uuid")
   private String powerpackUUID;
   private MessageType type = null;
-  private URL url = null;
   private String method = "POST";
   private Boolean log = null;
   private Boolean trackable = null;
@@ -80,10 +80,6 @@ public class MessageCreator extends Creator<MessageCreateResponse> {
     return this.type;
   }
 
-  public URL url() {
-    return this.url;
-  }
-
   public String method() {
     return this.method;
   }
@@ -101,14 +97,6 @@ public class MessageCreator extends Creator<MessageCreateResponse> {
    */
   public MessageCreator type(final MessageType type) {
     this.type = type;
-    return this;
-  }
-
-  /**
-   * @param url The URL to which with the status of the message is sent.
-   */
-  public MessageCreator url(final URL url) {
-    this.url = url;
     return this;
   }
 
