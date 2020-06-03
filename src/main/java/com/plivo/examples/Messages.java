@@ -44,7 +44,7 @@ public class Messages {
     try {
       List<String> numbers = new ArrayList<>();
       numbers.add("+15126937499");
-      MessageCreateResponse response = Message.creator("+15033053996", numbers, "Hello, world!")
+      MessageCreateResponse response = Message.creator("+15033053996", Collections.singletonList("+15126937499"), "Hello, world! What are you doing?")
         .create();
       System.out.println(response);
       System.out.println(response.getMessageUuid());
