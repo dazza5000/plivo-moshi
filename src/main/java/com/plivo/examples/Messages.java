@@ -28,7 +28,7 @@ import java.util.List;
 public class Messages {
 
   public static void main(String[] args) {
-    Plivo.init("MANJC3ZJKXOTM0NTZLMD", "N2RiMGExODRlZTVkNDc3ZWI4OTY0NTA2Nzc4MDUz");
+    Plivo.init(authId, authToken);
     sendmms();
     // getMessage();
     // listMedia();
@@ -40,11 +40,11 @@ public class Messages {
 //
   // send mms
   private static void sendmms() {
-    Plivo.init("MANJC3ZJKXOTM0NTZLMD", "N2RiMGExODRlZTVkNDc3ZWI4OTY0NTA2Nzc4MDUz");
+    Plivo.init(authId, authToken);
     try {
       List<String> numbers = new ArrayList<>();
       numbers.add("+15126937499");
-      MessageCreateResponse response = Message.creator("+15033053996", Collections.singletonList("+15126937499"), "Hello, world! What are you doing?")
+      MessageCreateResponse response = Message.creator("phone from", Collections.singletonList("phone to"), "Hello, world! What are you doing?")
         .create();
       System.out.println(response);
       System.out.println(response.getMessageUuid());
